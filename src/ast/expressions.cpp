@@ -15,78 +15,54 @@
 
 namespace eeval::ast
 {
-    class ValueExpr : public Expr
+    ValueExpr::ValueExpr(double value)
+    : _value{value} {}
+
+    [[nodiscard]] double ValueExpr::interpret() const
     {
-    private:
-        double _value;
+        return _value;
+    }
 
-    public:
-        ValueExpr(double value)
-            : _value{value} {}
+    UnaryExpr::UnaryExpr(ValueExpr value, char op)
+    : _value{value}, _op{op} {}
 
-        [[nodiscard]] double interpret() const
-        {
-            return _value;
-        }
-    };
-
-    class UnaryExpr : public Expr
+    [[nodiscard]] double UnaryExpr::interpret() const
     {
-    private:
-        ValueExpr _value;
-        char _op;
-
-    public:
-        UnaryExpr(ValueExpr value, char op)
-            : _value{value}, _op{op} {}
-
-        [[nodiscard]] double interpret() const
+        switch (_op)
         {
-            switch (_op)
-            {
-            case '+':
-                return _value.interpret();
-            case '-':
-                return _value.interpret() * -1;
-            default:
-                throw std::runtime_error{"Invalid operator in UnaryExpr!"};
-            }
+        case '+':
+            return _value.interpret();
+        case '-':
+            return _value.interpret() * -1;
+        default:
+            throw std::runtime_error{"Invalid operator in UnaryExpr!"};
         }
-    };
+    }
 
-    class BinaryExpr : public Expr
+    BinaryExpr::BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, char symbol) : _left(std::move(left)), _right(std::move(right)), _symbol{symbol} {}
+
+    [[nodiscard]] double BinaryExpr::interpret() const
     {
-    private:
-        std::unique_ptr<Expr> _left;
-        std::unique_ptr<Expr> _right;
-        char _symbol;
+        auto left_result = (*_left).interpret();
+        auto right_result = (*_right).interpret();
 
-    public:
-        BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, char symbol) : _left(std::move(left)), _right(std::move(right)), _symbol{symbol} {}
-
-        [[nodiscard]] double interpret() const
+        switch (_symbol)
         {
-            auto left_result = (*_left).interpret();
-            auto right_result = (*_right).interpret();
+        case '+':
+            return left_result + right_result;
+        case '-':
+            return left_result - right_result;
+        case '*':
+            return left_result * right_result;
+        case '/':
+            if (right_result == 0)
+                throw std::runtime_error{"Cannot divide by 0 !"};
 
-            switch (_symbol)
-            {
-            case '+':
-                return left_result + right_result;
-            case '-':
-                return left_result - right_result;
-            case '*':
-                return left_result * right_result;
-            case '/':
-                if (right_result == 0)
-                    throw std::runtime_error{"Cannot divide by 0 !"};
-
-                return left_result / right_result;
-            case '^':
-                return std::pow(left_result, right_result);
-            default:
-                throw std::runtime_error{"Invalid operator in BinaryExpr!"};
-            }
+            return left_result / right_result;
+        case '^':
+            return std::pow(left_result, right_result);
+        default:
+            throw std::runtime_error{"Invalid operator in BinaryExpr!"};
         }
-    };
+    }
 }

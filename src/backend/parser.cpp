@@ -101,7 +101,7 @@ namespace eeval::backend
     {
         if (!consumeToken(ExprTokenType::token_number, ExprTokenType::token_op_minus))
         {
-            return std::make_unique<eeval::ast::ValueExpr>(nullptr);
+            return std::make_unique<eeval::ast::ValueExpr>(0);
         }
 
         const ExprToken& temp = getCurrent();
@@ -139,7 +139,7 @@ namespace eeval::backend
 
             auto right_expr = parseFactor();
 
-            left_expr = std::make_unique<eeval::ast::BinaryExpr>(left_expr, right_expr, op);
+            left_expr = std::make_unique<eeval::ast::BinaryExpr>(std::move(left_expr), std::move(right_expr), op);
         }
 
         return left_expr;
@@ -157,7 +157,7 @@ namespace eeval::backend
 
             auto right_expr = parsePower();
 
-            left_expr = std::make_unique<eeval::ast::BinaryExpr>(left_expr, right_expr, op);
+            left_expr = std::make_unique<eeval::ast::BinaryExpr>(std::move(left_expr), std::move(right_expr), op);
         }
 
         return left_expr;
@@ -173,7 +173,7 @@ namespace eeval::backend
 
             auto right_expr = parseUnary();
 
-            left_expr = std::make_unique<eeval::ast::BinaryExpr>(left_expr, right_expr, op);
+            left_expr = std::make_unique<eeval::ast::BinaryExpr>(std::move(left_expr), std::move(right_expr), op);
         }
 
         return left_expr;
@@ -186,6 +186,8 @@ namespace eeval::backend
 
     ExprAST Parser::parseSource(std::string_view source_view)
     {
+        lexer.resetSelf(source_view);
+
         auto expr_root = parsePower();
 
         return ExprAST {std::move(expr_root)};
