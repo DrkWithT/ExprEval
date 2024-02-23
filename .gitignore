@@ -1,7 +1,11 @@
 bin
+CMakeFiles
 .DS_Store
 .git
 .vscode
 
+Makefile
+CMakeCache.txt
+*.cmake
 *.a
 *.o
