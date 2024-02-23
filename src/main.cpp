@@ -21,9 +21,9 @@ int main()
     while (true)
     {
         std::cout << ">> ";
-        bool read_ok = std::getline(std::cin, input_string, '\n').fail();
+        bool read_bad = std::getline(std::cin, input_string, '\n').fail();
 
-        if (!read_ok)
+        if (read_bad)
         {
             break;
         }

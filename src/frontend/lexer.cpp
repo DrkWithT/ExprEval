@@ -83,7 +83,7 @@ namespace eeval::frontend
         if (dot_count > 1)
             return (Token) {.begin = token_start, .length = token_length, .type = token_bad};
 
-        return (Token) {.begin = token_start, .length = token_length, .type = token_bad};
+        return (Token) {.begin = token_start, .length = token_length, .type = token_number};
     }
 
     Token Lexer::lexNext()
