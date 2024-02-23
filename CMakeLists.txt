@@ -7,7 +7,7 @@ project("ExprEval")
 project("ExprEval" VERSION 0.1.0)
 
 option(USE_DEBUG_BUILD "Compile with debug info and low optimization." ON)
-set(EXECUTABLE_OUTPUT_PATH "./bin")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_HOME_DIRECTORY}/bin")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
