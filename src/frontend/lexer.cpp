@@ -103,6 +103,8 @@ namespace eeval::frontend
             return lexSingle(token_op_times);
         case '/':
             return lexSingle(token_op_slash);
+        case '^':
+            return lexSingle(token_op_expo);
         default:
             break;
         }
