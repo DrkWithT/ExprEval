@@ -8,12 +8,12 @@
  * number ::= (DIGIT | ".")+
  * operators ::= "+" | "-" | "*" | "/"
  * 
- * value ::= number
- * unary ::= ("-"){0,1} value
- * binary-term ::= unary (("+" | "-") unary)*
- * binary-factor ::= term (("*" | "/") term)*
- * binary-power ::= power ("^" power)*
- * expr ::= value | unary | binary
+ * Note: Start parsing from lower precedence and ascend by precedence rule if needed!
+ * expr ::= term
+ * term ::= factor (("+" | "-") factor)*
+ * factor ::= power (("*" | "/") power)*
+ * power ::= unary ("^" unary)*
+ * unary ::= ("-"){0,1} number ; number is value expr!
  */
 
 #include "frontend/lexer.hpp"
@@ -26,10 +26,18 @@ namespace eeval::backend
     private:
         std::unique_ptr<eeval::ast::Expr> root;
     public:
+        ExprAST();
         ExprAST(std::unique_ptr<eeval::ast::Expr> expr_root);
         ~ExprAST() = default;
 
         friend double evaluateIt(const ExprAST& ast);
+    };
+
+    enum TokenConsumeStatus
+    {
+        consume_eof,
+        consume_ok,
+        consume_optional
     };
 
     class Parser
@@ -45,7 +53,7 @@ namespace eeval::backend
         [[nodiscard]] bool isAtEOF() const;
 
         [[nodiscard]] eeval::frontend::Token advanceByToken();
-        bool consumeToken(eeval::frontend::TokenType type_main, eeval::frontend::TokenType type_optional);
+        TokenConsumeStatus consumeToken(eeval::frontend::TokenType type_main, eeval::frontend::TokenType type_optional);
 
         std::unique_ptr<eeval::ast::Expr> parseUnary();
         std::unique_ptr<eeval::ast::Expr> parseTerm();
