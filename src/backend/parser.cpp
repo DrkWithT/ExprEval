@@ -2,6 +2,7 @@
  * @file parser.cpp
  * @author DrkWithT
  * @brief Implements recursive descent parser for math expressions. Generates AST for walking.
+ * @todo Fix parser precedence and errors: cannot recognize 1 + 1...
  * @date 2024-02-22
  * 
  * @copyright Copyright (c) 2024
@@ -19,6 +20,9 @@ using ExprGeneralNode = eeval::ast::Expr;
 namespace eeval::backend
 {
     /* ExprAST impl. */
+
+    ExprAST::ExprAST()
+    : root {nullptr} {}
 
     ExprAST::ExprAST(std::unique_ptr<eeval::ast::Expr> expr_root)
     : root(std::move(expr_root)) {}
@@ -79,61 +83,75 @@ namespace eeval::backend
         return temp;
     }
 
-    bool Parser::consumeToken(eeval::frontend::TokenType type_main, eeval::frontend::TokenType type_optional)
+    TokenConsumeStatus Parser::consumeToken(eeval::frontend::TokenType type_main, eeval::frontend::TokenType type_optional)
     {
-        previous = current;
-        current = advanceByToken();
+        if (current.type == type_main)
+        {
+            previous = current;
+            current = advanceByToken();
+            return consume_ok;
+        }
+
+        if (current.type == type_optional)
+        {
+            return TokenConsumeStatus::consume_optional;
+        }
 
         if (current.type == eeval::frontend::TokenType::token_eof)
         {
-            return false;
+            return TokenConsumeStatus::consume_eof;
         }
 
-        if (current.type == type_main || current.type == type_optional)
-        {
-            return true;
-        }
-
-        throw std::invalid_argument {"Unexpected token, possibly a mismatch or EOF."};
+        throw std::invalid_argument {"Unexpected token (misplaced or EOF)!"};
     }
 
     std::unique_ptr<ExprGeneralNode> Parser::parseUnary()
     {
-        if (!consumeToken(ExprTokenType::token_number, ExprTokenType::token_op_minus))
-        {
-            return std::make_unique<eeval::ast::ValueExpr>(0);
-        }
-
         const ExprToken& temp = getCurrent();
-        eeval::frontend::stringifyToken(temp, lexer.peekSource(), sout);
         double num_value = 0;
 
         if (temp.type == ExprTokenType::token_number)
         {
+            eeval::frontend::stringifyToken(temp, lexer.peekSource(), sout);
             num_value = std::stod(sout.str());
-            sout.clear();
+            sout.str("");
+
+            consumeToken(ExprTokenType::token_number, ExprTokenType::token_number);
+
             return std::make_unique<eeval::ast::ValueExpr>(num_value);
         }
 
-        sout.clear();
+        consumeToken(ExprTokenType::token_op_minus, ExprTokenType::token_op_minus);
+
+        if (current.type == ExprTokenType::token_number)
+        {
+            eeval::frontend::stringifyToken(getCurrent(), lexer.peekSource(), sout);
+            num_value = std::stod(sout.str());
+            eeval::ast::ValueExpr value {num_value};
+            sout.str("");
+
+            return std::make_unique<eeval::ast::UnaryExpr>(value, '-');
+        }
 
         consumeToken(ExprTokenType::token_number, ExprTokenType::token_number);
-        eeval::frontend::stringifyToken(getCurrent(), lexer.peekSource(), sout);
 
-        eeval::ast::ValueExpr value {num_value};
-
-        sout.clear();
-
-        return std::make_unique<eeval::ast::UnaryExpr>(value, '-');
+        return std::make_unique<eeval::ast::ValueExpr>(0);
     }
 
     std::unique_ptr<ExprGeneralNode> Parser::parseTerm()
     {
         auto left_expr = parseFactor();
 
-        while (consumeToken(ExprTokenType::token_op_plus, ExprTokenType::token_op_minus))
+        while (getCurrent().type != ExprTokenType::token_eof)
         {
-            char op = (getCurrent().type == ExprTokenType::token_op_plus)
+            if (getCurrent().type != ExprTokenType::token_op_plus && getCurrent().type != ExprTokenType::token_op_minus)
+            {
+                break;
+            }
+
+            consumeToken(ExprTokenType::token_op_plus, ExprTokenType::token_op_minus);
+
+            char op = (getPrevious().type == ExprTokenType::token_op_plus)
                 ? '+'
                 : '-';
 
@@ -149,9 +167,16 @@ namespace eeval::backend
     {
         auto left_expr = parsePower();
 
-        while (consumeToken(ExprTokenType::token_op_times, ExprTokenType::token_op_slash))
+        while (getCurrent().type != ExprTokenType::token_eof)
         {
-            char op = (getCurrent().type == ExprTokenType::token_op_times)
+            if (getCurrent().type != ExprTokenType::token_op_times && getCurrent().type != ExprTokenType::token_op_slash)
+            {
+                break;
+            }
+
+            consumeToken(ExprTokenType::token_op_times, ExprTokenType::token_op_slash);
+
+            char op = (getPrevious().type == ExprTokenType::token_op_times)
                 ? '*'
                 : '/';
 
@@ -167,8 +192,14 @@ namespace eeval::backend
     {
         auto left_expr = parseUnary();
 
-        while (consumeToken(ExprTokenType::token_op_expo, ExprTokenType::token_op_expo))
+        while (getCurrent().type != ExprTokenType::token_eof)
         {
+            if (getCurrent().type != ExprTokenType::token_op_expo)
+            {
+                break;
+            }
+
+            consumeToken(ExprTokenType::token_op_expo, ExprTokenType::token_op_expo);
             char op = '^';
 
             auto right_expr = parseUnary();
@@ -182,13 +213,18 @@ namespace eeval::backend
     /* Parser public impl. */
 
     Parser::Parser()
-    : sout {}, lexer {}, previous {}, current {} {}
+    : sout {}, lexer {}, previous {.type = ExprTokenType::token_eof}, current {.type = ExprTokenType::token_eof} {}
 
     ExprAST Parser::parseSource(std::string_view source_view)
     {
         lexer.resetSelf(source_view);
 
-        auto expr_root = parsePower();
+        if (consumeToken(ExprTokenType::token_eof, ExprTokenType::token_eof) == consume_eof)
+        {
+            return ExprAST {};
+        }
+
+        auto expr_root = parseTerm();
 
         return ExprAST {std::move(expr_root)};
     }
