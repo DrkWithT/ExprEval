@@ -14,18 +14,18 @@ namespace eeval::frontend
 {
     bool stringifyToken(const Token& token, std::string_view source, std::ostringstream& sout)
     {
-        if (token.begin >= source.length() || token.length == 0)
+        size_t token_begin = token.begin;
+
+        if (token_begin >= source.length() || token.length == 0)
         {
             return false;
         }
 
-        auto seeker = source.begin() + token.begin;
-        auto end = source.begin() + token.begin + token.length;
+        size_t token_end = token_begin + token.length;
 
-        while (seeker != end)
+        for (size_t token_pos = token_begin; token_pos < token_end; token_pos++)
         {
-            sout << *seeker;
-            seeker++;
+            sout << source[token_pos];
         }
 
         return true;
