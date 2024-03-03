@@ -2,7 +2,7 @@
  * @file parser.cpp
  * @author DrkWithT
  * @brief Implements recursive descent parser for math expressions. Generates AST for walking.
- * @todo Fix parser precedence and errors: cannot recognize 1 + 1...
+ * @note This uses an "interpreter" interface pattern to make the AST-walk evaluation a bit cleaner. :)
  * @date 2024-02-22
  * 
  * @copyright Copyright (c) 2024
@@ -89,11 +89,13 @@ namespace eeval::backend
         {
             previous = current;
             current = advanceByToken();
-            return consume_ok;
+            return TokenConsumeStatus::consume_ok;
         }
 
         if (current.type == type_optional)
         {
+            previous = current;
+            current = advanceByToken();
             return TokenConsumeStatus::consume_optional;
         }
 
