@@ -2,18 +2,8 @@
 #define PARSER_HPP
 
 /**
- * Synopsis of math expression grammar: BNF
- * 
- * whitespace ::= (SP | TAB | CR | LF)+
- * number ::= (DIGIT | ".")+
- * operators ::= "+" | "-" | "*" | "/"
- * 
- * Note: Start parsing from lower precedence and ascend by precedence rule if needed!
- * expr ::= term
- * term ::= factor (("+" | "-") factor)*
- * factor ::= power (("*" | "/") power)*
- * power ::= unary ("^" unary)*
- * unary ::= ("-"){0,1} number ; number is value expr!
+ * Summary of math expression grammar: BNF
+ * See: README.md
  */
 
 #include "frontend/lexer.hpp"
