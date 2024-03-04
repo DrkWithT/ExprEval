@@ -6,10 +6,20 @@
 
 namespace eeval::ast
 {
+    /// TODO: Replace character operators with deduced enum values. These should be assigned based on operator symbols in the parser.
+    enum MathOperator
+    {
+        math_add,
+        math_subtract,
+        math_multiply,
+        math_divide,
+        math_exponentiate
+    };
+
     class ValueExpr : public Expr
     {
     private:
-        double _value;
+        double inner_value;
 
     public:
         ValueExpr(double value);
@@ -20,8 +30,8 @@ namespace eeval::ast
     class UnaryExpr : public Expr
     {
     private:
-        ValueExpr _value;
-        char _op;
+        ValueExpr inner_value;
+        char op_symbol;
 
     public:
         UnaryExpr(ValueExpr value, char op);
@@ -32,9 +42,9 @@ namespace eeval::ast
     class BinaryExpr : public Expr
     {
     private:
-        std::unique_ptr<Expr> _left;
-        std::unique_ptr<Expr> _right;
-        char _symbol;
+        std::unique_ptr<Expr> lhs;
+        std::unique_ptr<Expr> rhs;
+        char op_symbol;
 
     public:
         BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, char symbol);

@@ -16,37 +16,37 @@
 namespace eeval::ast
 {
     ValueExpr::ValueExpr(double value)
-    : _value{value} {}
+    : inner_value{value} {}
 
     double ValueExpr::interpret() const
     {
-        return _value;
+        return inner_value;
     }
 
     UnaryExpr::UnaryExpr(ValueExpr value, char op)
-    : _value{value}, _op{op} {}
+    : inner_value{value}, op_symbol{op} {}
 
     double UnaryExpr::interpret() const
     {
-        switch (_op)
+        switch (op_symbol)
         {
         case '+':
-            return _value.interpret();
+            return inner_value.interpret();
         case '-':
-            return _value.interpret() * -1;
+            return inner_value.interpret() * -1;
         default:
             throw std::runtime_error{"Invalid operator in UnaryExpr!"};
         }
     }
 
-    BinaryExpr::BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, char symbol) : _left(std::move(left)), _right(std::move(right)), _symbol{symbol} {}
+    BinaryExpr::BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, char symbol) : lhs(std::move(left)), rhs(std::move(right)), op_symbol{symbol} {}
 
     double BinaryExpr::interpret() const
     {
-        auto left_result = (*_left).interpret();
-        auto right_result = (*_right).interpret();
+        auto left_result = (*lhs).interpret();
+        auto right_result = (*rhs).interpret();
 
-        switch (_symbol)
+        switch (op_symbol)
         {
         case '+':
             return left_result + right_result;
