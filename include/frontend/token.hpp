@@ -8,17 +8,17 @@ namespace eeval::frontend
 {
     enum TokenType
     {
-        token_bad,
-        token_eof,
-        token_whitespace,
-        token_number,
-        token_op_plus,
-        token_op_minus,
-        token_op_times,
-        token_op_slash,
-        token_op_expo,
-        token_lparen,
-        token_rparen
+        unknown,
+        eof,
+        whitespace,
+        number,
+        op_plus,
+        op_minus,
+        op_times,
+        op_slash,
+        op_expo,
+        lparen,
+        rparen
     };
 
     struct Token

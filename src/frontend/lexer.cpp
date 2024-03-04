@@ -36,7 +36,7 @@ namespace eeval::frontend
 
         position++;
 
-        return (Token) {.begin = mark_pos, .length = 1, .type = token_type};
+        return {.begin = mark_pos, .length = 1, .type = token_type};
     }
 
     Token Lexer::lexSpacing()
@@ -56,7 +56,7 @@ namespace eeval::frontend
             position++;
         }
 
-        return (Token) {.begin = token_start, .length = token_length, .type = token_whitespace};
+        return {.begin = token_start, .length = token_length, .type = whitespace};
     }
 
     Token Lexer::lexNumeric()
@@ -81,30 +81,30 @@ namespace eeval::frontend
         }
         
         if (dot_count > 1)
-            return (Token) {.begin = token_start, .length = token_length, .type = token_bad};
+            return {.begin = token_start, .length = token_length, .type = unknown};
 
-        return (Token) {.begin = token_start, .length = token_length, .type = token_number};
+        return {.begin = token_start, .length = token_length, .type = number};
     }
 
     Token Lexer::lexNext()
     {
         if (position >= limit)
-            return (Token) {.begin = limit, .length = 1, .type = token_eof};
+            return {.begin = limit, .length = 1, .type = eof};
 
         char symbol = source_view[position];
 
         switch (symbol)
         {
         case '+':
-            return lexSingle(token_op_plus);
+            return lexSingle(op_plus);
         case '-':
-            return lexSingle(token_op_minus);
+            return lexSingle(op_minus);
         case '*':
-            return lexSingle(token_op_times);
+            return lexSingle(op_times);
         case '/':
-            return lexSingle(token_op_slash);
+            return lexSingle(op_slash);
         case '^':
-            return lexSingle(token_op_expo);
+            return lexSingle(op_expo);
         default:
             break;
         }
@@ -116,6 +116,6 @@ namespace eeval::frontend
 
         position++;
 
-        return (Token) {.begin = position - 1, .length = 1, .type = token_bad};
+        return {.begin = position - 1, .length = 1, .type = unknown};
     }
 }

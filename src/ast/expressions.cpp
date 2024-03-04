@@ -18,7 +18,7 @@ namespace eeval::ast
     ValueExpr::ValueExpr(double value)
     : _value{value} {}
 
-    [[nodiscard]] double ValueExpr::interpret() const
+    double ValueExpr::interpret() const
     {
         return _value;
     }
@@ -26,7 +26,7 @@ namespace eeval::ast
     UnaryExpr::UnaryExpr(ValueExpr value, char op)
     : _value{value}, _op{op} {}
 
-    [[nodiscard]] double UnaryExpr::interpret() const
+    double UnaryExpr::interpret() const
     {
         switch (_op)
         {
@@ -41,7 +41,7 @@ namespace eeval::ast
 
     BinaryExpr::BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, char symbol) : _left(std::move(left)), _right(std::move(right)), _symbol{symbol} {}
 
-    [[nodiscard]] double BinaryExpr::interpret() const
+    double BinaryExpr::interpret() const
     {
         auto left_result = (*_left).interpret();
         auto right_result = (*_right).interpret();
