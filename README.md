@@ -20,5 +20,5 @@ unary ::= ("-"){0,1} number
 
 ### Some extras:
  - I must add parenthesis support soon.
- - Add a REPL for expressions?
+ - ~~Add a REPL for expressions?~~ **DONE**
  - Make error messages more detailed?
