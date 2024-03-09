@@ -16,6 +16,7 @@
 using ExprTokenType = eeval::frontend::TokenType;
 using ExprToken = eeval::frontend::Token;
 using ExprGeneralNode = eeval::ast::Expr;
+using ExprOperator = eeval::ast::MathOperator;
 
 namespace eeval::backend
 {
@@ -35,7 +36,7 @@ namespace eeval::backend
             return 0;
         }
 
-        return (*ast.root).interpret();
+        return ast.root->interpret();
     }
 
     /* Parser private impls. */
@@ -132,7 +133,7 @@ namespace eeval::backend
             eeval::ast::ValueExpr value {num_value};
             sout.str("");
 
-            return std::make_unique<eeval::ast::UnaryExpr>(value, '-');
+            return std::make_unique<eeval::ast::UnaryExpr>(value, ExprOperator::math_subtract);
         }
 
         consumeToken(ExprTokenType::number, ExprTokenType::number);
@@ -153,9 +154,9 @@ namespace eeval::backend
 
             consumeToken(ExprTokenType::op_plus, ExprTokenType::op_minus);
 
-            char op = (getPrevious().type == ExprTokenType::op_plus)
-                ? '+'
-                : '-';
+            ExprOperator op = (getPrevious().type == ExprTokenType::op_plus)
+                ? ExprOperator::math_add
+                : ExprOperator::math_subtract;
 
             auto right_expr = parseFactor();
 
@@ -178,9 +179,9 @@ namespace eeval::backend
 
             consumeToken(ExprTokenType::op_times, ExprTokenType::op_slash);
 
-            char op = (getPrevious().type == ExprTokenType::op_times)
-                ? '*'
-                : '/';
+            ExprOperator op = (getPrevious().type == ExprTokenType::op_times)
+                ? ExprOperator::math_multiply
+                : ExprOperator::math_divide;
 
             auto right_expr = parsePower();
 
@@ -202,11 +203,10 @@ namespace eeval::backend
             }
 
             consumeToken(ExprTokenType::op_expo, ExprTokenType::op_expo);
-            char op = '^';
 
             auto right_expr = parseUnary();
 
-            left_expr = std::make_unique<eeval::ast::BinaryExpr>(std::move(left_expr), std::move(right_expr), op);
+            left_expr = std::make_unique<eeval::ast::BinaryExpr>(std::move(left_expr), std::move(right_expr), ExprOperator::math_exponentiate);
         }
 
         return left_expr;

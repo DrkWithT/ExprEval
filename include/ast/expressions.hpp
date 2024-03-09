@@ -9,6 +9,7 @@ namespace eeval::ast
     /// TODO: Replace character operators with deduced enum values. These should be assigned based on operator symbols in the parser.
     enum MathOperator
     {
+        math_none,
         math_add,
         math_subtract,
         math_multiply,
@@ -31,10 +32,10 @@ namespace eeval::ast
     {
     private:
         ValueExpr inner_value;
-        char op_symbol;
+        MathOperator op;
 
     public:
-        UnaryExpr(ValueExpr value, char op);
+        UnaryExpr(ValueExpr value, MathOperator oper);
 
         [[nodiscard]] double interpret() const override;
     };
@@ -44,10 +45,10 @@ namespace eeval::ast
     private:
         std::unique_ptr<Expr> lhs;
         std::unique_ptr<Expr> rhs;
-        char op_symbol;
+        MathOperator op;
 
     public:
-        BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, char symbol);
+        BinaryExpr(std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, MathOperator oper);
 
         [[nodiscard]] double interpret() const override;
     };
