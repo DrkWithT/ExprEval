@@ -105,6 +105,10 @@ namespace eeval::frontend
             return lexSingle(op_slash);
         case '^':
             return lexSingle(op_expo);
+        case '(':
+            return lexSingle(lparen);
+        case ')':
+            return lexSingle(rparen);
         default:
             break;
         }

@@ -111,6 +111,18 @@ namespace eeval::backend
     std::unique_ptr<ExprGeneralNode> Parser::parseUnary()
     {
         const ExprToken& temp = getCurrent();
+
+        if (temp.type == ExprTokenType::lparen)
+        {
+            consumeToken(ExprTokenType::lparen, ExprTokenType::lparen);
+
+            auto wrapped_expr = parseTerm();
+
+            consumeToken(ExprTokenType::rparen, ExprTokenType::rparen);
+
+            return wrapped_expr;
+        }
+
         double num_value = 0;
 
         if (temp.type == ExprTokenType::number)
