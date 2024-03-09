@@ -15,10 +15,10 @@ expr ::= term
 term ::= factor (("+" | "-") factor)*
 factor ::= power (("*" | "/") power)*
 power ::= unary ("^" unary)*
-unary ::= ("-"){0,1} number
+unary ::= ?("-") number | "(" expr ")"
 ```
 
 ### Some extras:
- - I must add parenthesis support soon.
+ - ~~I must add parenthesis support soon.~~ **DONE**
  - ~~Add a REPL for expressions?~~ **DONE**
  - Make error messages more detailed?
